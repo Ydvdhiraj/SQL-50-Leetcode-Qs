@@ -1,0 +1,25 @@
+# Write your MySQL query statement below
+WITH DepartmentSalaries AS (
+    SELECT 
+        departmentId,
+        salary,
+        DENSE_RANK() OVER (PARTITION BY departmentId ORDER BY salary DESC) AS salary_rank
+    FROM (
+        SELECT DISTINCT departmentId, salary
+        FROM Employee
+    ) AS unique_salaries
+),
+TopSalaries AS (
+    SELECT departmentId, salary
+    FROM DepartmentSalaries
+    WHERE salary_rank <= 3
+)
+SELECT 
+    d.name AS Department,
+    e.name AS Employee,
+    e.salary AS Salary
+FROM Employee e
+JOIN TopSalaries ts
+    ON e.departmentId = ts.departmentId AND e.salary = ts.salary
+JOIN Department d
+    ON e.departmentId = d.id;
